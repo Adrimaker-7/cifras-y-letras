@@ -3,106 +3,139 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cifras y Letras</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;text-align:center}
-header{padding:22px 10px;font-size:28px;font-weight:bold;color:#5eead4}
-#inicio{padding:25px}
-button{border:0;border-radius:14px;padding:16px 24px;font-size:20px;font-weight:bold;cursor:pointer}
-.modo{display:block;width:90%;max-width:350px;margin:20px auto;background:#14b8a6;color:#102a2a}
-#juego{display:none;min-height:80vh;padding:15px}
-.selector{display:flex;align-items:center;justify-content:center;gap:24px;margin:10px auto 45px}
-.flecha{background:#334155;color:white;font-size:27px;padding:12px 20px}
-#numero{font-size:34px;font-weight:bold}
-#contenido{background:#1e293b;border-radius:20px;padding:30px 12px;margin:0 auto;max-width:650px}
-#tipo{font-size:23px;color:#5eead4}
-#objetivo{font-size:28px;font-weight:bold;color:#fbbf24;margin:25px 0}
-#datos{font-size:clamp(25px,5vw,38px);font-weight:bold;line-height:1.8;overflow-wrap:anywhere}
-#volver{background:#334155;color:white;margin:25px}
+body{
+  margin:0;background:#101827;color:#fff;
+  font-family:Arial,sans-serif;text-align:center
+}
+header{padding:24px 10px;color:#5eead4;font-size:30px;font-weight:bold}
+button{cursor:pointer;border:0;border-radius:12px;font-size:20px;font-weight:bold;padding:15px 22px}
+#inicio{padding:30px 15px}
+.modo{
+  display:block;width:90%;max-width:350px;margin:22px auto;
+  background:#14b8a6;color:#082f2c
+}
+#juego{display:none;padding:10px 15px 30px}
+.selector{
+  display:flex;justify-content:center;align-items:center;
+  gap:28px;margin:15px auto 40px
+}
+.flecha{background:#334155;color:white;font-size:25px;padding:12px 20px}
+#numero{font-size:35px;font-weight:bold}
+#contenido{
+  max-width:750px;margin:auto;background:#1e293b;
+  border-radius:20px;padding:35px 15px;min-height:280px
+}
+#tipo{font-size:25px;color:#5eead4}
+#objetivo{font-size:29px;font-weight:bold;color:#fbbf24;margin:30px 0}
+#datos{
+  font-size:clamp(25px,5vw,38px);font-weight:bold;
+  line-height:1.8;overflow-wrap:anywhere
+}
+.volver{margin:25px auto;background:#334155;color:white}
+button:disabled{opacity:.25;cursor:default}
 </style>
 </head>
 <body>
+
 <header>CIFRAS Y LETRAS</header>
 
 <div id="inicio">
-<p>¿Qué quieres jugar?</p>
-<button class="modo" onclick="abrir('C')">🔢 CIFRAS</button>
-<button class="modo" onclick="abrir('L')">🔤 LETRAS</button>
+  <p>¿Qué quieres jugar?</p>
+  <button class="modo" onclick="abrir('C')">🔢 CIFRAS</button>
+  <button class="modo" onclick="abrir('L')">🔤 LETRAS</button>
 </div>
 
 <div id="juego">
-<div class="selector">
-<button class="flecha" onclick="mover(-1)">◀</button>
-<div>
-<div style="font-size:15px;color:#94a3b8">PRUEBA</div>
-<div id="numero">001</div>
-</div>
-<button class="flecha" onclick="mover(1)">▶</button>
-</div>
+  <div class="selector">
+    <button class="flecha" onclick="mover(-1)" aria-label="Prueba anterior">◀</button>
+    <div>
+      <div style="font-size:15px;color:#94a3b8">PRUEBA</div>
+      <div id="numero">001</div>
+    </div>
+    <button class="flecha" onclick="mover(1)" aria-label="Prueba siguiente">▶</button>
+  </div>
 
-<div id="contenido">
-<div id="tipo"></div>
-<div id="objetivo"></div>
-<div id="datos"></div>
-</div>
+  <main id="contenido">
+    <div id="tipo"></div>
+    <div id="objetivo"></div>
+    <div id="datos"></div>
+  </main>
 
-<button id="volver" onclick="volver()">← MENÚ</button>
+  <button class="volver" onclick="volver()">← MENÚ</button>
 </div>
 
 <script>
-let modo='C', prueba=1;
+let modo = 'C';
+let prueba = 1;
 
-const cifras={
-1:{o:256,n:[9,7,2,10,100,75]},
-2:{o:535,n:[100,6,10,25,2,2]}
+/* PRUEBAS DE CIFRAS */
+const cifras = {
+  1: { objetivo: 256, numeros: [9,7,2,10,100,75] },
+  2: { objetivo: 535, numeros: [100,6,10,25,2,2] }
 };
 
-const letras={
-1:{n:['R','O','I','A','A','S','P','A','M']},
-2:{n:['U','T','P','T','A','A','E','L','N']}
+/* PRUEBAS DE LETRAS */
+const letras = {
+  1: ['R','O','I','A','A','S','P','A','M'],
+  2: ['U','T','P','T','A','A','E','L','N']
 };
 
-function abrir(m){
-modo=m;
-prueba=1;
-document.getElementById('inicio').style.display='none';
-document.getElementById('juego').style.display='block';
-actualizar();
+function abrir(tipo){
+  modo = tipo;
+  prueba = 1;
+  document.getElementById('inicio').style.display = 'none';
+  document.getElementById('juego').style.display = 'block';
+  actualizar();
 }
 
 function volver(){
-document.getElementById('juego').style.display='none';
-document.getElementById('inicio').style.display='block';
+  document.getElementById('juego').style.display = 'none';
+  document.getElementById('inicio').style.display = 'block';
 }
 
 function mover(cambio){
-prueba=Math.max(1,Math.min(100,prueba+cambio));
-actualizar();
+  prueba = Math.max(1, Math.min(100, prueba + cambio));
+  actualizar();
 }
 
 function actualizar(){
-document.getElementById('numero').textContent=String(prueba).padStart(3,'0');
+  document.getElementById('numero').textContent =
+    String(prueba).padStart(3,'0');
 
-const datos=modo==='C'?cifras[prueba]:letras[prueba];
+  document.getElementById('tipo').textContent =
+    modo === 'C' ? '🔢 CIFRAS' : '🔤 LETRAS';
 
-document.getElementById('tipo').textContent=modo==='C'?'🔢 CIFRAS':'🔤 LETRAS';
+  const anterior = document.querySelectorAll('.flecha')[0];
+  const siguiente = document.querySelectorAll('.flecha')[1];
+  anterior.disabled = prueba === 1;
+  siguiente.disabled = prueba === 100;
 
-if(!datos){
-document.getElementById('objetivo').textContent='';
-document.getElementById('datos').textContent='Prueba pendiente de cargar';
-return;
+  if(modo === 'C'){
+    const p = cifras[prueba];
+    document.getElementById('objetivo').textContent =
+      p ? 'Objetivo: ' + p.objetivo : '';
+    document.getElementById('datos').textContent =
+      p ? p.numeros.join(' · ') : 'Prueba pendiente de cargar';
+  }else{
+    const p = letras[prueba];
+    document.getElementById('objetivo').textContent =
+      p ? 'Palabra más larga posible' : '';
+    document.getElementById('datos').textContent =
+      p ? p.join(' · ') : 'Prueba pendiente de cargar';
+  }
 }
 
-if(modo==='C'){
-document.getElementById('objetivo').textContent='Objetivo: '+datos.o;
-document.getElementById('datos').textContent=datos.n.join(' · ');
-}else{
-document.getElementById('objetivo').textContent='Palabra más larga';
-document.getElementById('datos').textContent=datos.n.join(' · ');
-}
-}
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('juego').style.display === 'block'){
+    if(e.key === 'ArrowLeft') mover(-1);
+    if(e.key === 'ArrowRight') mover(1);
+  }
+});
 </script>
+
 </body>
 </html>
