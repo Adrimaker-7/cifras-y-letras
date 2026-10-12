@@ -3,139 +3,328 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cifras y Letras</title>
 <style>
 *{box-sizing:border-box}
-body{
-  margin:0;background:#101827;color:#fff;
-  font-family:Arial,sans-serif;text-align:center
-}
+body{margin:0;background:#101827;color:#fff;font-family:Arial,sans-serif;text-align:center}
 header{padding:24px 10px;color:#5eead4;font-size:30px;font-weight:bold}
-button{cursor:pointer;border:0;border-radius:12px;font-size:20px;font-weight:bold;padding:15px 22px}
-#inicio{padding:30px 15px}
-.modo{
-  display:block;width:90%;max-width:350px;margin:22px auto;
-  background:#14b8a6;color:#082f2c
-}
+button,input{font:inherit;border:0;border-radius:12px;padding:14px}
+button{cursor:pointer;font-weight:bold}
+#inicio{padding:20px}
+.modo{display:block;width:90%;max-width:350px;margin:20px auto;background:#14b8a6;color:#082b2b;font-size:22px}
+.selector-menu{margin:35px auto;max-width:350px}
+.selector-menu input{width:100%;background:#fff;color:#111;font-size:22px;text-align:center;margin:8px 0}
+.ir{width:100%;margin:5px 0;background:#334155;color:white}
 #juego{display:none;padding:10px 15px 30px}
-.selector{
-  display:flex;justify-content:center;align-items:center;
-  gap:28px;margin:15px auto 40px
-}
-.flecha{background:#334155;color:white;font-size:25px;padding:12px 20px}
+.selector{display:flex;align-items:center;justify-content:center;gap:25px;margin:15px auto 45px}
+.flecha{background:#334155;color:#fff;font-size:27px;padding:12px 21px}
+.flecha:disabled{opacity:.25}
+.etiqueta{font-size:15px;color:#94a3b8}
 #numero{font-size:35px;font-weight:bold}
-#contenido{
-  max-width:750px;margin:auto;background:#1e293b;
-  border-radius:20px;padding:35px 15px;min-height:280px
-}
+#contenido{max-width:880px;min-height:325px;margin:auto;background:#1e293b;border-radius:24px;padding:40px 16px}
 #tipo{font-size:25px;color:#5eead4}
-#objetivo{font-size:29px;font-weight:bold;color:#fbbf24;margin:30px 0}
-#datos{
-  font-size:clamp(25px,5vw,38px);font-weight:bold;
-  line-height:1.8;overflow-wrap:anywhere
-}
-.volver{margin:25px auto;background:#334155;color:white}
-button:disabled{opacity:.25;cursor:default}
+#objetivo{font-size:29px;font-weight:bold;color:#fbbf24;margin:35px 0}
+#datos{font-size:clamp(25px,5vw,38px);font-weight:bold;line-height:1.8;overflow-wrap:anywhere}
+.volver{margin:30px auto;background:#334155;color:white;font-size:20px}
+@media(max-width:500px){header{font-size:25px}#contenido{padding:30px 10px;min-height:260px}.selector{gap:16px;margin-bottom:30px}}
 </style>
 </head>
 <body>
-
 <header>CIFRAS Y LETRAS</header>
 
 <div id="inicio">
-  <p>¿Qué quieres jugar?</p>
-  <button class="modo" onclick="abrir('C')">🔢 CIFRAS</button>
-  <button class="modo" onclick="abrir('L')">🔤 LETRAS</button>
+<p>¿Qué quieres jugar?</p>
+<button class="modo" onclick="preparar('C')">🔢 CIFRAS</button>
+<button class="modo" onclick="preparar('L')">🔤 LETRAS</button>
+<div class="selector-menu">
+<p>O elige directamente una prueba:</p>
+<input id="pruebaMenu" type="number" min="1" max="100" value="1" placeholder="Número de prueba">
+<button class="ir" onclick="irNumero()">Ir a la prueba</button>
+</div>
 </div>
 
 <div id="juego">
-  <div class="selector">
-    <button class="flecha" onclick="mover(-1)" aria-label="Prueba anterior">◀</button>
-    <div>
-      <div style="font-size:15px;color:#94a3b8">PRUEBA</div>
-      <div id="numero">001</div>
-    </div>
-    <button class="flecha" onclick="mover(1)" aria-label="Prueba siguiente">▶</button>
-  </div>
-
-  <main id="contenido">
-    <div id="tipo"></div>
-    <div id="objetivo"></div>
-    <div id="datos"></div>
-  </main>
-
-  <button class="volver" onclick="volver()">← MENÚ</button>
+<div class="selector">
+<button class="flecha" id="anterior" onclick="mover(-1)">◀</button>
+<div><div class="etiqueta">PRUEBA</div><div id="numero">001</div></div>
+<button class="flecha" id="siguiente" onclick="mover(1)">▶</button>
+</div>
+<main id="contenido">
+<div id="tipo"></div>
+<div id="objetivo"></div>
+<div id="datos"></div>
+</main>
+<button class="volver" onclick="volver()">← MENÚ</button>
 </div>
 
 <script>
-let modo = 'C';
-let prueba = 1;
+let modo='C', prueba=1;
 
-/* PRUEBAS DE CIFRAS */
-const cifras = {
-  1: { objetivo: 256, numeros: [9,7,2,10,100,75] },
-  2: { objetivo: 535, numeros: [100,6,10,25,2,2] }
-};
+/* OBJETIVO | SEIS NÚMEROS */
+const datosCifras = `
+256|9,7,2,10,100,75
+535|100,6,10,25,2,2
+373|50,25,1,1,3,8
+234|4,9,75,1,1,100
+465|4,100,10,25,3,5
+618|9,4,100,6,4,25
+518|5,25,9,9,50,3
+499|4,50,1,2,6,100
+441|3,9,8,100,25,4
+253|1,2,3,75,5,50
+637|2,9,100,9,75,6
+193|100,5,1,75,8,9
+604|5,7,25,5,4,50
+500|2,3,75,4,3,25
+393|7,2,5,4,75,100
+210|7,50,7,9,3,100
+154|100,3,1,8,50,6
+354|5,5,25,50,9,3
+449|10,4,7,25,100,4
+611|7,50,10,25,3,4
+344|100,1,1,50,4,8
+154|2,75,9,7,50,5
+350|9,25,9,10,100,8
+479|25,3,6,50,8,7
+150|75,2,3,50,5,10
+234|75,6,5,1,8,25
+110|25,7,5,2,75,5
+497|9,7,50,25,5,4
+553|25,10,100,10,4,8
+581|5,25,10,6,6,50
+479|5,7,9,75,10,100
+339|100,3,50,3,9,6
+367|8,100,3,6,25,8
+613|2,5,50,10,25,6
+129|9,8,3,25,9,75
+373|7,100,6,50,5,2
+401|75,100,7,1,5,6
+612|75,2,4,8,25,9
+186|75,5,10,50,5,3
+500|50,1,25,1,7,6
+615|25,6,9,2,1,100
+110|2,2,5,5,25,75
+644|4,5,10,75,50,8
+121|50,5,10,9,6,75
+497|8,100,6,9,25,7
+636|25,7,10,2,50,4
+253|50,5,3,3,75,4
+497|10,8,1,1,75,50
+344|5,25,100,6,5,1
+494|50,100,3,5,9,2
+529|7,4,100,5,1,25
+571|25,100,8,10,2,6
+616|4,100,25,6,9,2
+572|50,6,1,6,100,9
+175|1,7,50,100,8,4
+397|10,25,100,4,7,4
+432|2,75,25,5,1,9
+347|3,1,50,4,1,75
+104|1,5,4,100,7,75
+317|25,8,3,1,9,75
+342|25,10,6,7,7,50
+333|100,6,9,9,5,75
+184|75,9,100,4,7,7
+419|6,25,5,1,75,6
+356|9,100,3,8,2,25
+583|10,25,6,3,7,75
+490|9,9,1,1,25,75
+498|5,6,8,25,75,2
+255|100,2,9,6,75,4
+288|8,7,50,5,6,75
+254|25,7,7,7,50,6
+381|100,7,50,3,8,7
+570|1,100,7,5,2,25
+231|100,75,6,7,7,10
+199|8,3,7,50,8,100
+506|8,75,7,6,1,100
+295|50,3,3,4,10,75
+467|50,25,6,9,1,5
+188|2,6,100,50,1,8
+304|9,100,6,25,8,3
+446|7,8,100,25,8,10
+611|4,4,50,4,9,25
+599|50,5,2,6,5,100
+609|9,9,75,3,6,100
+359|1,5,75,8,3,50
+294|8,50,75,7,8,10
+341|7,3,8,100,2,25
+267|75,5,1,100,4,2
+179|6,1,4,75,7,50
+150|75,4,6,6,9,50
+338|5,100,3,9,8,50
+584|4,75,10,5,100,8
+354|25,7,2,5,4,100
+445|75,100,1,10,2,9
+241|6,5,9,50,75,7
+628|50,2,9,5,7,100
+173|5,25,5,50,8,2
+218|4,50,10,100,10,5
+326|4,25,75,5,7,1
+206|50,1,6,75,7,6
+`.trim().split('\n').map(f=>{
+ const [o,n]=f.split('|');
+ return {objetivo:Number(o),numeros:n.split(',').map(Number)};
+});
 
-/* PRUEBAS DE LETRAS */
-const letras = {
-  1: ['R','O','I','A','A','S','P','A','M'],
-  2: ['U','T','P','T','A','A','E','L','N']
-};
+/* NUEVE LETRAS POR PRUEBA */
+const datosLetras = `
+ROIAASPAM
+UTPTAELAN
+RAIEMCION
+LRATEETSL
+UEOUCRDNA
+LSTPONNAA
+CEIBILOBT
+ROLEMCRAA
+EMLIAGUCR
+RAAVPREMI
+SAATNEANV
+EEEFTNLAE
+NIROORCEC
+PADCSEORZ
+SASEIRGLO
+SNANRTAOM
+ETCLABCII
+RDRDOENAO
+THAOEOCLC
+VURNEOSIN
+LACIATOSL
+SATGNTRUO
+PIDUAEMIR
+IDUSAONRI
+AAETVTNUR
+THPROSLIA
+AAML FASII
+EDOAIJRRN
+JMRCDOYAE
+ANGRTRAUI
+ONEOFTELN
+ADRSBAESN
+CSTAMEACI
+AZTALILPA
+LRAPAEPAE
+EOQS BXO UA
+INEAAPILC
+ARNIJSANA
+UFBILTTOS
+EPTMMAANC
+UCASSLREE
+RMOSSSAET
+NRHEILVTA
+AEITNNROL
+CASASDCAS
+NEAASLMII
+CGJEERONA
+IORSUETNB
+UBAELNLSA
+IINOOPNUG
+REARACRET
+MHBEORB SO
+PACO IISLA
+ECAIRRNOC
+NERSPADOA
+REBDO OEEB
+SJEEUEGUT
+LGRGEEOAS
+IEAAVDDIN
+EPLAUONCM
+ITMISDMAA
+LRFAEISGA
+PAOFIO CIC
+DNMREOEOA
+TUNIASURP
+ANEIJDUTB
+TATANECNT
+BALNARIAI
+UODATSELC
+AALOTNLPA
+RMRSE AIPO
+RSOAGRCAD
+ESLAEERRC
+NAETAASDL
+TEANMHTOS
+ATAASPATJ
+ROGZNBAAS
+ORVDOAAAL
+IGFRIF IRO
+AHAANMLDO
+ARALOFMBZ
+TIANSCOOR
+AAARRIMOE
+EINRTTESA
+IAIRLMOLT
+TSILEDONR
+RNCRAETPI
+GUDJOEARG
+AEROIPRTE
+EANOSLCBT
+EMOILTATS
+AASNIOCTN
+INPEATJEA
+IANOOTMNP
+XSN IROEUC
+OMAETALHE
+REPTUOREA
+IESLBLEOT
+JRSEEPOAA
+DINUAPMAM
+`.trim().split('\n').map(s=>s.replace(/[^A-Z]/g,''));
 
-function abrir(tipo){
-  modo = tipo;
-  prueba = 1;
-  document.getElementById('inicio').style.display = 'none';
-  document.getElementById('juego').style.display = 'block';
-  actualizar();
+/* Ajustar automáticamente si una línea se copió con espacios */
+function preparar(tipo){
+ modo=tipo;
+ document.getElementById('inicio').style.display='none';
+ document.getElementById('juego').style.display='block';
+ prueba=1;
+ actualizar();
 }
-
+function irNumero(){
+ const v=Number(document.getElementById('pruebaMenu').value);
+ if(!Number.isInteger(v)||v<1||v>100){
+  alert('Escribe un número del 1 al 100');
+  return;
+ }
+ prueba=v;
+ modo='C';
+ prepararModoSinReset('C',v);
+}
+function prepararModoSinReset(tipo,n){
+ modo=tipo;prueba=n;
+ document.getElementById('inicio').style.display='none';
+ document.getElementById('juego').style.display='block';
+ actualizar();
+}
+function mover(delta){
+ prueba=Math.max(1,Math.min(100,prueba+delta));
+ actualizar();
+}
 function volver(){
-  document.getElementById('juego').style.display = 'none';
-  document.getElementById('inicio').style.display = 'block';
+ document.getElementById('juego').style.display='none';
+ document.getElementById('inicio').style.display='block';
 }
-
-function mover(cambio){
-  prueba = Math.max(1, Math.min(100, prueba + cambio));
-  actualizar();
-}
-
 function actualizar(){
-  document.getElementById('numero').textContent =
-    String(prueba).padStart(3,'0');
-
-  document.getElementById('tipo').textContent =
-    modo === 'C' ? '🔢 CIFRAS' : '🔤 LETRAS';
-
-  const anterior = document.querySelectorAll('.flecha')[0];
-  const siguiente = document.querySelectorAll('.flecha')[1];
-  anterior.disabled = prueba === 1;
-  siguiente.disabled = prueba === 100;
-
-  if(modo === 'C'){
-    const p = cifras[prueba];
-    document.getElementById('objetivo').textContent =
-      p ? 'Objetivo: ' + p.objetivo : '';
-    document.getElementById('datos').textContent =
-      p ? p.numeros.join(' · ') : 'Prueba pendiente de cargar';
-  }else{
-    const p = letras[prueba];
-    document.getElementById('objetivo').textContent =
-      p ? 'Palabra más larga posible' : '';
-    document.getElementById('datos').textContent =
-      p ? p.join(' · ') : 'Prueba pendiente de cargar';
-  }
+ document.getElementById('numero').textContent=String(prueba).padStart(3,'0');
+ document.getElementById('anterior').disabled=prueba===1;
+ document.getElementById('siguiente').disabled=prueba===100;
+ document.getElementById('tipo').textContent=modo==='C'?'🔢 CIFRAS':'🔤 LETRAS';
+ if(modo==='C'){
+  const p=datosCifras[prueba-1];
+  document.getElementById('objetivo').textContent='Objetivo: '+p.objetivo;
+  document.getElementById('datos').textContent=p.numeros.join(' · ');
+ }else{
+  const letras=(datosLetras[prueba-1]||'').replace(/[^A-Z]/g,'').split('');
+  document.getElementById('objetivo').textContent='Palabra más larga posible';
+  document.getElementById('datos').textContent=letras.join(' · ');
+ }
 }
-
-document.addEventListener('keydown',function(e){
-  if(document.getElementById('juego').style.display === 'block'){
-    if(e.key === 'ArrowLeft') mover(-1);
-    if(e.key === 'ArrowRight') mover(1);
-  }
+document.addEventListener('keydown',e=>{
+ if(document.getElementById('juego').style.display==='block'){
+  if(e.key==='ArrowLeft')mover(-1);
+  if(e.key==='ArrowRight')mover(1);
+ }
 });
 </script>
-
 </body>
 </html>
