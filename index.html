@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cifras y Letras</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#101827;color:white;text-align:center;padding:20px}
+h1{color:#5eead4}
+button,input{font-size:18px;padding:12px;border-radius:10px;border:0;margin:5px}
+button{cursor:pointer;background:#14b8a6;color:#062b2b;font-weight:bold}
+input{width:100%;max-width:320px}
+.panel{background:#1e293b;padding:22px;margin:15px auto;border-radius:18px;max-width:600px}
+.numeros{font-size:27px;font-weight:bold;letter-spacing:3px;margin:20px 0}
+.oculto{display:none}
+</style>
+</head>
+<body>
+<h1>🎮 CIFRAS Y LETRAS</h1>
+<p>¡Demuestra lo que sabes!</p>
+
+<div class="panel">
+<button onclick="mostrar('cifras')">🔢 CIFRAS</button>
+<button onclick="mostrar('letras')">🔤 LETRAS</button>
+</div>
+
+<div class="panel">
+<label for="prueba">Número de prueba:</label><br>
+<input id="prueba" placeholder="Ejemplo: 001" maxlength="3" inputmode="numeric">
+<br><button onclick="cargar()">Cargar prueba</button>
+<p id="mensaje"></p>
+</div>
+
+<div class="panel oculto" id="juego">
+<h2 id="titulo"></h2>
+<h2 id="objetivo"></h2>
+<div class="numeros" id="datos"></div>
+<p id="tiempo">45 segundos</p>
+<button onclick="iniciar()">▶ Empezar tiempo</button>
+<div id="respuesta">
+<input id="contestacion" placeholder="Escribe tu respuesta">
+<button onclick="corregir()">Comprobar</button>
+</div>
+<p id="resultado"></p>
+</div>
+
+<script>
+let modo="cifras", reloj, segundos=45;
+const cifras={
+"001":{o:256,n:[9,7,2,10,100,75]},
+"002":{o:535,n:[100,6,10,25,2,2]}
+};
+const letras={
+"001":["R","O","I","A","A","S","P","A","M"],
+"002":["U","T","P","T","A","A","E","L","N"]
+};
+
+function mostrar(m){
+modo=m;
+document.getElementById("mensaje").textContent=
+m==="cifras"?"Modo Cifras seleccionado":"Modo Letras seleccionado";
+document.getElementById("juego").classList.add("oculto");
+}
+function cargar(){
+clearInterval(reloj);
+let id=document.getElementById("prueba").value.trim().padStart(3,"0");
+let juego=document.getElementById("juego");
+let datos=document.getElementById("datos");
+let objetivo=document.getElementById("objetivo");
+let titulo=document.getElementById("titulo");
+let entrada=document.getElementById("contestacion");
+let resultado=document.getElementById("resultado");
+resultado.textContent="";
+entrada.value="";
+segundos=45;
+document.getElementById("tiempo").textContent="45 segundos";
+
+if(modo==="cifras"&&cifras[id]){
+titulo.textContent="🔢 Prueba "+id;
+objetivo.textContent="Objetivo: "+cifras[id].o;
+datos.textContent=cifras[id].n.join(" · ");
+entrada.placeholder="Escribe tus operaciones";
+}else if(modo==="letras"&&letras[id]){
+titulo.textContent="🔤 Prueba "+id;
+objetivo.textContent="Forma la palabra más larga";
+datos.textContent=letras[id].join(" · ");
+entrada.placeholder="Escribe tu palabra";
+}else{
+document.getElementById("mensaje").textContent=
+"No tengo esa prueba cargada todavía.";
+juego.classList.add("oculto");
+return;
+}
+juego.classList.remove("oculto");
+}
+function iniciar(){
+clearInterval(reloj);
+segundos=45;
+document.getElementById("tiempo").textContent=segundos+" segundos";
+reloj=setInterval(()=>{
+segundos--;
+document.getElementById("tiempo").textContent=segundos+" segundos";
+if(segundos<=0){
+clearInterval(reloj);
+document.getElementById("tiempo").textContent="¡Tiempo!";
+}
+},1000);
+}
+function corregir(){
+let r=document.getElementById("contestacion").value.trim();
+if(!r){document.getElementById("resultado").textContent="Escribe tu respuesta primero.";return;}
+if(modo==="letras"){
+let letrasDisponibles=letras[document.getElementById("prueba").value.trim().padStart(3,"0")].slice();
+let valida=true;
+for(let c of r.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")){
+let i=letrasDisponibles.indexOf(c);
+if(i<0){valida=false;break;}
+letrasDisponibles.splice(i,1);
+}
+document.getElementById("resultado").textContent=valida?
+"¡Las letras encajan! Comprueba que la palabra exista en español.":
+"Has usado letras que no están disponibles.";
+}else{
+document.getElementById("resultado").textContent=
+"Respuesta anotada. Revisa que las operaciones sean correctas y que el resultado sea "+cifras[document.getElementById("prueba").value.trim().padStart(3,"0")].o+".";
+}
+}
+</script>
+</body>
+</html>
