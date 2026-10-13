@@ -3,192 +3,168 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cifras y Letras - Retos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cifras, Letras y Cerillas</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;text-align:center}
-header{padding:25px 10px;font-size:30px;font-weight:bold;color:#5eead4}
-button,input{font:inherit;border:0;border-radius:12px;padding:14px}
-button{cursor:pointer;font-weight:bold}
-#menu{padding:20px}
-.mode{display:block;margin:18px auto;width:90%;max-width:350px;background:#14b8a6;color:#062b2b;font-size:22px}
-#game{display:none;padding:10px 12px 30px}
-.nav{display:flex;justify-content:center;align-items:center;gap:22px;margin:15px auto 35px}
-.arrow{background:#334155;color:white;font-size:25px}
-#num{font-size:35px;font-weight:bold}
-.card{max-width:850px;margin:auto;background:#1e293b;border-radius:24px;padding:30px 12px;min-height:300px}
-#category{color:#5eead4;font-size:24px}
-#instruction{font-size:20px;margin:25px 0;color:#e2e8f0}
-#matches{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;min-height:100px}
-.digit{width:64px;height:105px}
-.segment{stroke:#9b6737;stroke-width:1}
-.operator{font-size:40px;font-weight:bold;padding:0 3px}
-#back{margin:25px;background:#334155;color:white}
-#prev:disabled,#next:disabled{opacity:.3}
-@media(max-width:500px){.digit{width:42px;height:75px}.operator{font-size:30px}.card{padding:24px 5px}}
+*{box-sizing:border-box}body{margin:0;background:#101827;color:#fff;font-family:Arial,sans-serif;text-align:center}
+header{padding:24px 10px;color:#5eead4;font-size:30px;font-weight:bold}
+button,input{font:inherit;border:0;border-radius:12px;padding:13px}button{cursor:pointer;font-weight:bold}
+#menu{padding:20px}.mode{display:block;width:92%;max-width:390px;margin:15px auto;background:#14b8a6;color:#082b2b;font-size:20px}
+#pick{max-width:360px;margin:20px auto}#pick input{display:block;width:100%;margin:10px 0;text-align:center;font-size:22px}
+#game{display:none;padding:10px 12px 30px}.nav{display:flex;justify-content:center;align-items:center;gap:22px;margin:15px auto 30px}
+.arrow{background:#334155;color:#fff;font-size:25px}.arrow:disabled{opacity:.25}
+#num{font-size:35px;font-weight:bold}.card{max-width:850px;margin:auto;background:#1e293b;border-radius:24px;padding:30px 12px;min-height:260px}
+#category{color:#5eead4;font-size:24px}#instruction{font-size:20px;margin:24px 0;color:#e2e8f0}
+#board{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;min-height:100px;font-size:28px;font-weight:bold;overflow-wrap:anywhere}
+#back{margin:25px;background:#334155;color:white;font-size:20px}
+.digit{width:60px;height:95px;max-width:14vw}.op{font-size:38px;font-weight:bold;padding:0 2px}
+.note{font-size:13px;color:#94a3b8;margin-top:20px}
+@media(max-width:500px){header{font-size:24px}.digit{width:42px;height:68px}.op{font-size:27px}.card{padding:24px 5px}}
 </style>
 </head>
 <body>
-<header>🎮 CENTRO DE RETOS</header>
-
+<header>🎮 CIFRAS, LETRAS Y CERILLAS</header>
 <div id="menu">
-  <p>Elige una categoría</p>
-  <button class="mode" onclick="start('C')">🔢 CIFRAS</button>
-  <button class="mode" onclick="start('L')">🔤 LETRAS</button>
-  <button class="mode" onclick="start('R')">🔥 RETOS CON CERILLAS</button>
-  <p>Prueba inicial:</p>
-  <input id="startNumber" type="number" min="1" max="100" value="1"
-         style="width:180px;text-align:center">
+  <p>Elige una categoría y el nivel inicial</p>
+  <div id="pick"><label for="startNum">Nivel (001–100)</label><input id="startNum" type="number" min="1" max="100" value="1"></div>
+  <button class="mode" onclick="start('C')">🔢 C — CIFRAS</button>
+  <button class="mode" onclick="start('L')">🔤 L — LETRAS</button>
+  <button class="mode" onclick="start('R')">🔥 R — RETOS CON CERILLAS</button>
+  <p class="note">Usa las flechas para cambiar de nivel.</p>
 </div>
-
 <div id="game">
   <div class="nav">
     <button class="arrow" id="prev" onclick="move(-1)">◀</button>
-    <div>
-      <div style="color:#94a3b8">NIVEL</div>
-      <div id="num">001</div>
-    </div>
+    <div><div style="color:#94a3b8">NIVEL</div><div id="num">001</div></div>
     <button class="arrow" id="next" onclick="move(1)">▶</button>
   </div>
   <main class="card">
-    <div id="category"></div>
-    <div id="instruction"></div>
-    <div id="matches"></div>
+    <div id="category"></div><div id="instruction"></div><div id="board"></div>
   </main>
   <button id="back" onclick="back()">← MENÚ</button>
 </div>
-
 <script>
-let mode='R', level=1;
+let mode='C', level=1;
 
-const digits = {
-  0:'abcdef', 1:'bc', 2:'abged', 3:'abgcd',
-  4:'fgbc', 5:'afgcd', 6:'afgecd', 7:'abc',
-  8:'abcdefg', 9:'abfgcd'
-};
+// CIFRAS: objetivo y seis números por nivel.
+const cifras = [
+[256,[9,7,2,10,100,75]],[535,[100,6,10,25,2,2]],[373,[50,25,1,1,3,8]],[234,[4,9,75,1,1,100]],[465,[4,100,10,25,3,5]],
+[618,[9,4,100,6,4,25]],[518,[5,25,9,9,50,3]],[499,[4,50,1,2,6,100]],[441,[3,9,8,100,25,4]],[253,[1,2,3,75,5,50]],
+[637,[2,9,100,9,75,6]],[193,[100,5,1,75,8,9]],[604,[5,7,25,5,4,50]],[500,[2,3,75,4,3,25]],[393,[7,2,5,4,75,100]],
+[210,[7,50,7,9,3,100]],[154,[100,3,1,8,50,6]],[354,[5,5,25,50,9,3]],[449,[10,4,7,25,100,4]],[611,[7,50,10,25,3,4]],
+[344,[100,1,1,50,4,8]],[154,[2,75,9,7,50,5]],[350,[9,25,9,10,100,8]],[479,[25,3,6,50,8,7]],[150,[75,2,3,50,5,10]],
+[234,[75,6,5,1,8,25]],[110,[25,7,5,2,75,5]],[497,[9,7,50,25,5,4]],[553,[25,10,100,10,4,8]],[581,[5,25,10,6,6,50]],
+[479,[5,7,9,75,10,100]],[339,[100,3,50,3,9,6]],[367,[8,100,3,6,25,8]],[613,[2,5,50,10,25,6]],[129,[9,8,3,25,9,75]],
+[373,[7,100,6,50,5,2]],[401,[75,100,7,1,5,6]],[612,[75,2,4,8,25,9]],[186,[75,5,10,50,5,3]],[500,[50,1,25,1,7,6]],
+[615,[25,6,9,2,1,100]],[110,[2,2,5,5,25,75]],[644,[4,5,10,75,50,8]],[121,[50,5,10,9,6,75]],[497,[8,100,6,9,25,7]],
+[636,[25,7,10,2,50,4]],[253,[50,5,3,3,75,4]],[497,[10,8,1,1,75,50]],[344,[5,25,100,6,5,1]],[494,[50,100,3,5,9,2]],
+[529,[7,4,100,5,1,25]],[571,[25,100,8,10,2,6]],[616,[4,100,25,6,9,2]],[572,[50,6,1,6,100,9]],[175,[1,7,50,100,8,4]],
+[397,[10,25,100,4,7,4]],[432,[2,75,25,5,1,9]],[347,[3,1,50,4,1,75]],[104,[1,5,4,100,7,75]],[317,[25,8,3,1,9,75]],
+[342,[25,10,6,7,7,50]],[333,[100,6,9,9,5,75]],[184,[75,9,100,4,7,7]],[419,[6,25,5,1,75,6]],[356,[9,100,3,8,2,25]],
+[583,[10,25,6,3,7,75]],[490,[9,9,1,1,25,75]],[498,[5,6,8,25,75,2]],[255,[100,2,9,6,75,4]],[288,[8,7,50,5,6,75]],
+[254,[25,7,7,7,50,6]],[381,[100,7,50,3,8,7]],[570,[1,100,7,5,2,25]],[231,[100,75,6,7,7,10]],[199,[8,3,7,50,8,100]],
+[506,[8,75,7,6,1,100]],[295,[50,3,3,4,10,75]],[467,[50,25,6,9,1,5]],[188,[2,6,100,50,1,8]],[304,[9,100,6,25,8,3]],
+[446,[7,8,100,25,8,10]],[611,[4,4,50,4,9,25]],[599,[50,5,2,6,5,100]],[609,[9,9,75,3,6,100]],[359,[1,5,75,8,3,50]],
+[294,[8,50,75,7,8,10]],[341,[7,3,8,100,2,25]],[267,[75,5,1,100,4,2]],[179,[6,1,4,75,7,50]],[150,[75,4,6,6,9,50]],
+[338,[5,100,3,9,8,50]],[584,[4,75,10,5,100,8]],[354,[25,7,2,5,4,100]],[445,[75,100,1,10,2,9]],[241,[6,5,9,50,75,7]],
+[628,[50,2,9,5,7,100]],[173,[5,25,5,50,8,2]],[218,[4,50,10,100,10,5]],[326,[4,25,75,5,7,1]],[206,[50,1,6,75,7,6]]
+];
 
-function svgDigit(n){
-  const segments={
-    a:[12,8,42,8], b:[54,12,54,43], c:[54,51,54,82],
-    d:[12,86,42,86], e:[8,51,8,82], f:[8,12,8,43],
-    g:[12,47,42,47]
-  };
-  let out='<svg class="digit" viewBox="0 0 65 95" aria-label="'+n+'">';
-  for(const s of digits[n]){
-    const p=segments[s];
-    const horizontal=['a','d','g'].includes(s);
-    const points=horizontal
-      ? `${p[0]},${p[1]-3} ${p[2]-4},${p[3]-3} ${p[2]},${p[3]} ${p[0]+4},${p[1]}`
-      : `${p[0]-3},${p[1]+4} ${p[0]},${p[1]} ${p[2]},${p[3]-4} ${p[2]-3},${p[3]}`;
-    out+='<polygon class="segment" fill="#f4d28b" points="'+points+'"/>';
-    out+='<circle cx="'+(horizontal?(p[0]+3):(p[0]-1))+'" cy="'+(horizontal?p[1]-1:(p[1]+4))+'" r="1.5" fill="#b86b3d"/>';
-  }
-  return out+'</svg>';
+// LETRAS: 100 combinaciones de nueve letras.
+const letras = [
+'ROIAASPAM','UTPTAELAN','RAIEMCION','LRATEETSL','UEOUCRDNA','LSTPONNAA','CEIBILOBT','ROLEMCRAA','EMLIAGUCR','RAAVPREMI',
+'SAATNEANV','EEEFTNLAE','NIROORCEC','PADCSEORZ','SASEIRGLO','SNANRTAOM','ETCLABCII','RDRDOENAO','THAOEOCLC','VURNEOSIN',
+'LACIATOSL','SATGNTRUO','PIDUAEMIR','IDUSAONRI','AAETVTNUR','THPROSLIA','AAMLFASII','EDOAIJRRN','JMRCDOYAE','ANGRTRAUI',
+'ONEOFTELN','ADRSBAESN','CSTAMEACI','AZTALILPA','LRAPAEPAE','EOQSBXOUA','INEAAPILC','ARNIJSANA','UFBILTTOS','EPTMMAANC',
+'UCASSLREE','RMOSSSAET','NRHEILVTA','AEITNNROL','CASASDCAS','NEAASLMII','CGJEERONA','IORSUETNB','UBAELNLSA','IINOOPNUG',
+'REARACRET','MHBEORBSO','PACO IISLA'.replace(/ /g,''),'ECAIRRNOC','NERSPADOA','REBDOOEEB','SJEEUEGUT','LGRGEEOAS','IEAAVDDIN','EPLAUONCM','ITMISDMAA',
+'LRFAEISGA','PAOFIOCIC','DNMREOEOA','TUNIASURP','ANEIJDUTB','TATANECNT','BALNARIAI','UODATSELC','AALOTNLPA','RMRSEAIPO',
+'RSOAGRCAD','ESLAEERRC','NAETAASDL','TEANMHTOS','ATAASPATJ','ROGZNBAAS','ORVDOAAAL','IGFRIFIRO','AHAANMLDO','ARALOFMBZ',
+'TIANSCOOR','AAARRIMOE','EINRTTESA','IAIRLMOLT','TSILEDONR','RNCRAETPI','GUDJOEARG','AEROIPRTE','EANOSLCBT','EMOILTATS',
+'AASNIOCTN','INPEATJEA','IANOOTMNP','XSNIROEUC','OMAETALHE','REPTUOREA','IESLBLEOT','JRSEEPOAA','DINUAPMAM'
+].map(x=>x.replace(/[^A-Z]/g,''));
+
+// Segmentos de dígitos para crear dibujos tipo cerillas.
+const segs={0:'abcdef',1:'bc',2:'abged',3:'abgcd',4:'fgbc',5:'afgcd',6:'afgecd',7:'abc',8:'abcdefg',9:'abfgcd'};
+const geom={a:[12,8,42,8],b:[54,12,54,43],c:[54,51,54,82],d:[12,86,42,86],e:[8,51,8,82],f:[8,12,8,43],g:[12,47,42,47]};
+function digitSVG(n){
+ let out='<svg class="digit" viewBox="0 0 65 95" aria-label="'+n+'">';
+ for(const s of segs[n]){
+  const [x1,y1,x2,y2]=geom[s],h=['a','d','g'].includes(s);
+  const pts=h?`${x1},${y1-3} ${x2-4},${y2-3} ${x2},${y2} ${x1+4},${y1}`:`${x1-3},${y1+4} ${x1},${y1} ${x2},${y2-4} ${x2-3},${y2}`;
+  out+='<polygon fill="#f4d28b" stroke="#9b6737" stroke-width="1" points="'+pts+'"/>';
+  out+='<circle cx="'+(h?x1+3:x1-1)+'" cy="'+(h?y1-1:y1+4)+'" r="1.5" fill="#b86b3d"/>';
+ }
+ return out+'</svg>';
 }
 
-function validDigit(segments){
-  for(let n=0;n<=9;n++){
-    if(digits[n].split('').sort().join('')===segments.split('').sort().join(''))return n;
-  }
-  return -1;
-}
-
-/* Genera retos moviendo exactamente una cerilla entre dos cifras. */
-function buildPuzzles(){
-  const puzzles=[];
-  const seen=new Set();
-  for(let a=0;a<=9;a++){
-    for(let b=0;b<=9;b++){
-      const c=a+b;
-      if(c>9)continue;
-      const original=[a,b,c];
-      for(let from=0;from<3;from++){
-        for(let to=0;to<3;to++){
-          if(from===to)continue;
-          for(const seg of digits[original[from]]){
-            const source=digits[original[from]].replace(seg,'');
-            const newSource=validDigit(source);
-            if(newSource<0)continue;
-            for(const add of 'abcdefg'){
-              if(digits[original[to]].includes(add))continue;
-              const newTarget=validDigit(digits[original[to]]+add);
-              if(newTarget<0)continue;
-              const result=original.slice();
-              result[from]=newSource;
-              result[to]=newTarget;
-              if(result[0]+result[1]===result[2])continue;
-              const key=result.join('+')+'='+from+to;
-              if(seen.has(key))continue;
-              seen.add(key);
-              puzzles.push({
-                values:result,
-                from:from,
-                to:to,
-                answer:original.join('+')+'='+c
-              });
-            }
-          }
-        }
-      }
+// Crea 100 ecuaciones incorrectas que se pueden corregir moviendo una cerilla.
+// Cada reto se construye a partir de una operación verdadera de un dígito.
+function crearRetos(){
+ const digitBySet={};
+ Object.entries(segs).forEach(([d,s])=>digitBySet[[...s].sort().join('')]=Number(d));
+ const ops=[['+', (a,b)=>a+b],['−',(a,b)=>a-b],['×',(a,b)=>a*b]];
+ const pool=[],seen=new Set();
+ for(const [op,fn] of ops){
+  for(let a=0;a<=9;a++)for(let b=0;b<=9;b++){
+   const c=fn(a,b);
+   if(c<0||c>9||!Number.isInteger(c))continue;
+   if(op==='−'&&a<b)continue;
+   const base=[a,b,c];
+   for(let from=0;from<3;from++)for(let to=0;to<3;to++){
+    if(from===to)continue;
+    for(const add of 'abcdefg'){
+     const fromSet=new Set(segs[base[from]]);
+     if(fromSet.has(add))continue;
+     fromSet.add(add);
+     const fromDigit=digitBySet[[...fromSet].sort().join('')];
+     if(fromDigit===undefined)continue;
+     for(const rem of segs[base[to]]){
+      const toSet=new Set(segs[base[to]]);
+      toSet.delete(rem);
+      const toDigit=digitBySet[[...toSet].sort().join('')];
+      if(toDigit===undefined)continue;
+      const puzzle=base.slice();puzzle[from]=fromDigit;puzzle[to]=toDigit;
+      if(fn(puzzle[0],puzzle[1])===puzzle[2])continue;
+      const key=puzzle.join(',')+op;
+      if(seen.has(key))continue;seen.add(key);
+      pool.push({a:puzzle[0],b:puzzle[1],c:puzzle[2],op});
+      if(pool.length>=100)return pool;
+     }
     }
+   }
   }
-  return puzzles;
+ }
+ return pool;
 }
-
-const puzzles=buildPuzzles();
-const challenges=Array.from({length:100},(_,i)=>puzzles[i%puzzles.length]);
+const retos=crearRetos();
 
 function start(m){
-  mode=m;
-  const requested=Number(document.getElementById('startNumber').value);
-  level=Number.isInteger(requested)&&requested>=1&&requested<=100?requested:1;
-  document.getElementById('menu').style.display='none';
-  document.getElementById('game').style.display='block';
-  render();
+ const n=Number(document.getElementById('startNum').value);
+ if(!Number.isInteger(n)||n<1||n>100){alert('Elige un nivel entre 1 y 100');return}
+ mode=m;level=n;document.getElementById('menu').style.display='none';document.getElementById('game').style.display='block';render();
 }
-function move(n){
-  level=Math.max(1,Math.min(100,level+n));
-  render();
-}
-function back(){
-  document.getElementById('game').style.display='none';
-  document.getElementById('menu').style.display='block';
-}
+function move(d){level=Math.max(1,Math.min(100,level+d));render()}
+function back(){document.getElementById('game').style.display='none';document.getElementById('menu').style.display='block'}
 function render(){
-  document.getElementById('num').textContent=String(level).padStart(3,'0');
-  document.getElementById('prev').disabled=level===1;
-  document.getElementById('next').disabled=level===100;
-  const cat=document.getElementById('category');
-  const inst=document.getElementById('instruction');
-  const board=document.getElementById('matches');
-
-  if(mode==='R'){
-    cat.textContent='🔥 RETOS CON CERILLAS';
-    inst.textContent='Mueve una cerilla para corregir la operación.';
-    const p=challenges[level-1];
-    board.innerHTML=
-      svgDigit(p.values[0])+
-      '<span class="operator">+</span>'+
-      svgDigit(p.values[1])+
-      '<span class="operator">=</span>'+
-      svgDigit(p.values[2]);
-  }else if(mode==='C'){
-    cat.textContent='🔢 CIFRAS';
-    inst.textContent='Modo de cifras';
-    board.textContent='Integra aquí tus pruebas de cifras.';
-  }else{
-    cat.textContent='🔤 LETRAS';
-    inst.textContent='Modo de letras';
-    board.textContent='Integra aquí tus pruebas de letras.';
-  }
+ document.getElementById('num').textContent=String(level).padStart(3,'0');
+ document.getElementById('prev').disabled=level===1;document.getElementById('next').disabled=level===100;
+ const cat=document.getElementById('category'),inst=document.getElementById('instruction'),board=document.getElementById('board');
+ board.innerHTML='';
+ if(mode==='C'){
+  cat.textContent='🔢 CIFRAS';inst.textContent='Objetivo: '+cifras[level-1][0];
+  board.textContent=cifras[level-1][1].join('   ·   ');
+ }else if(mode==='L'){
+  cat.textContent='🔤 LETRAS';inst.textContent='Forma la palabra más larga posible';
+  board.textContent=letras[level-1].split('').join(' · ');
+ }else{
+  cat.textContent='🔥 RETOS CON CERILLAS';inst.textContent='Mueve una sola cerilla para que la operación sea correcta.';
+  const r=retos[level-1];
+  if(!r){board.textContent='No se pudo generar este reto.';return}
+  board.innerHTML=digitSVG(r.a)+'<span class="op">'+r.op+'</span>'+digitSVG(r.b)+'<span class="op">=</span>'+digitSVG(r.c);
+ }
 }
-document.addEventListener('keydown',e=>{
-  if(document.getElementById('game').style.display==='block'){
-    if(e.key==='ArrowLeft')move(-1);
-    if(e.key==='ArrowRight')move(1);
-  }
-});
+document.addEventListener('keydown',e=>{if(document.getElementById('game').style.display==='block'){if(e.key==='ArrowLeft')move(-1);if(e.key==='ArrowRight')move(1)}});
 </script>
 </body>
 </html>
